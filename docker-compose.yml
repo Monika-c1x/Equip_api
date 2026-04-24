@@ -1,0 +1,98 @@
+version: '3.8'
+
+services:
+  # MySQL Database
+  mysql:
+    image: mysql:8.0
+    container_name: equip_mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: NewPass123
+      MYSQL_DATABASE: equip_platform
+      MYSQL_USER: equip_user
+      MYSQL_PASSWORD: equip_password
+      TZ: 'UTC'
+    ports:
+      - '3306:3306'
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./docker-init/mysql-init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'mysqladmin',
+          'ping',
+          '-h',
+          'localhost',
+          '-u',
+          'root',
+          '-pNewPass123',
+        ]
+      timeout: 20s
+      retries: 10
+    networks:
+      - equip_network
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: equip_redis
+    command: redis-server --appendonly yes --requirepass redispassword123
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', '--raw', 'incr', 'ping']
+      timeout: 3s
+      retries: 5
+    networks:
+      - equip_network
+
+  # NestJS Application
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: equip_api
+    environment:
+      NODE_ENV: development
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_USER: equip_user
+      DB_PASSWORD: equip_password
+      DB_NAME: equip_platform
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: redispassword123
+      JWT_SECRET: your-super-secret-key-change-in-production-12345
+      JWT_EXPIRES_IN: 7d
+      FRONTEND_URL: http://localhost:3000
+      BACKEND_URL: http://localhost:3001
+      SMTP_HOST: smtp.gmail.com
+      SMTP_PORT: 587
+      SMTP_SECURE: 'false'
+      SMTP_USER: ${SMTP_USER:-your-email@gmail.com}
+      SMTP_PASS: ${SMTP_PASS:-your-app-password}
+      SMTP_FROM: noreply@equip-platform.com
+    ports:
+      - '3001:3001'
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./src:/app/src
+      - ./logs:/app/logs
+    restart: unless-stopped
+    networks:
+      - equip_network
+
+volumes:
+  mysql_data:
+  redis_data:
+
+networks:
+  equip_network:
+    driver: bridge
