@@ -5,12 +5,15 @@ import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { AppResolver } from './app.resolver';
 import { CommonModule } from './common/common.module';
-import { UsersModule } from './modules/users/users.module';
+import { AssessmentModule } from './modules/assessment/assessment.module';
+import { QuestionModule } from './modules/questions/question.module';
 
 @Module({
   imports: [
     CommonModule,
-    ConfigModule.forRoot(), 
+    ConfigModule.forRoot(),
+    QuestionModule,
+    AssessmentModule,
 
     TypeOrmModule.forRoot({
       type: 'mysql',
@@ -27,8 +30,6 @@ import { UsersModule } from './modules/users/users.module';
       driver: ApolloDriver,
       autoSchemaFile: true,
     }),
-
-    UsersModule,
   ],
   providers: [AppResolver],
 })
