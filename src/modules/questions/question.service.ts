@@ -41,4 +41,16 @@ export class QuestionService {
 
     return savedQuestion;
   }
+
+  async getQuestionsByAssessmentId(assessmentId: string): Promise<Question[]> {
+    
+    const mappings = await this.assessmentQuestionRepo.find({
+      where: { assessment_id: assessmentId },
+      relations: ['question'], 
+      
+      order: { createdAt: 'ASC' }, 
+    });
+
+    return mappings.map((mapping) => mapping.question);
+  }
 }
