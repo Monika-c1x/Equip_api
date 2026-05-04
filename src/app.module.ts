@@ -6,20 +6,12 @@ import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { AppResolver } from './app.resolver';
 import { CommonModule } from './common/common.module';
 import { UsersModule } from './modules/users/users.module';
-import { AuthModule } from './modules/auth/auth.module';
-import { CandidateModule } from './modules/candidate/candidate.module';
-import { InviteModule } from './modules/invite/invite.module';
-import { RedisModule } from './common/redis/redis.module';
-import { Invite, Candidate } from './common/entities';
-import { AssessmentModule } from './modules/assessment/assessment.module';
+import { Candidate, Invite } from './common/entities';
 
 @Module({
   imports: [
     CommonModule,
-    ConfigModule.forRoot({
-      isGlobal: true,
-      envFilePath: '.env',
-    }),
+    ConfigModule.forRoot(), 
 
     TypeOrmModule.forRoot({
       type: 'mysql',
@@ -43,12 +35,7 @@ import { AssessmentModule } from './modules/assessment/assessment.module';
       }),
     }),
 
-    RedisModule,
-    AuthModule,
-    CandidateModule,
-    InviteModule,
     UsersModule,
-    AssessmentModule
   ],
   providers: [AppResolver],
 })
