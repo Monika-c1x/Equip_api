@@ -6,6 +6,7 @@ import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { AppResolver } from './app.resolver';
 import { CommonModule } from './common/common.module';
 import { UsersModule } from './modules/users/users.module';
+import { Candidate, Invite } from './common/entities';
 
 @Module({
   imports: [
