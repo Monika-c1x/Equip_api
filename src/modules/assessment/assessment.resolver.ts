@@ -4,6 +4,9 @@ import { Assessment } from './entities/assessment.entity';
 import { CreateAssessmentInput } from './dto/create-assessment.input';
 import { UpdateAssessmentInput } from './dto/update-assessment.input';
 import { UseGuards } from '@nestjs/common';
+import { StudentAssessmentResponse } from './dto/student-assessment.response';
+import { GetAssessmentsArgs } from './dto/get-assessments.args';
+import { PaginatedAssessmentsResponse } from './dto/paginated-assessments.response';
 
 @Resolver(() => Assessment)
 export class AssessmentResolver {
@@ -27,9 +30,9 @@ export class AssessmentResolver {
   //     return this.assessmentService.create(createAssessmentInput, userId);
   //   }
 
-  @Query(() => [Assessment], { name: 'getAssessments' }) 
-  findAll() {
-    return this.assessmentService.findAll();
+ @Query(() => PaginatedAssessmentsResponse, { name: 'getAssessments' }) 
+  findAll(@Args() args: GetAssessmentsArgs) {
+    return this.assessmentService.findAll(args);
   }
 
   @Query(() => Assessment, { name: 'getAssessment' })
@@ -47,5 +50,12 @@ export class AssessmentResolver {
   @Mutation(() => String)
   removeAssessment(@Args('id', { type: () => ID }) id: string) {
     return this.assessmentService.remove(id);
+  }
+
+  @Query(() => StudentAssessmentResponse, { name: 'getStudentTestDetails' })
+  async getStudentTestDetails(
+    @Args('assessmentId', { type: () => ID }) assessmentId: string,
+  ) {
+    return this.assessmentService.getStudentAssessmentDetails(assessmentId);
   }
 }

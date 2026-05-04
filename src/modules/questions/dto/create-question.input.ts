@@ -5,6 +5,7 @@ import {
   IsInt,
   IsBoolean,
   IsObject,
+  IsOptional,
 } from 'class-validator';
 import GraphQLJSON from 'graphql-type-json';
 
@@ -39,4 +40,9 @@ export class CreateQuestionInput {
   @Field()
   @IsBoolean()
   status!: boolean;
+
+  @Field({ nullable: true }) 
+  @IsString()
+  @IsOptional()
+  assessmentId?: string;
 }
