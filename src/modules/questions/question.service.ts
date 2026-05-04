@@ -3,12 +3,16 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Question } from './entities/question.entity';
 import { CreateQuestionInput } from './dto/create-question.input';
+import { AssessmentQuestion } from '../assessment/entities/assessment-question.entity';
 
 @Injectable()
 export class QuestionService {
   constructor(
     @InjectRepository(Question)
     private questionRepository: Repository<Question>,
+
+    @InjectRepository(AssessmentQuestion)
+    private assessmentQuestionRepo: Repository<AssessmentQuestion>,
   ) {}
 
   async create(createQuestionInput: CreateQuestionInput): Promise<Question> {
@@ -22,6 +26,19 @@ export class QuestionService {
       status: createQuestionInput.status,
     });
 
-    return await this.questionRepository.save(newQuestion);
+    // Save the question to the mcq_questions table
+    const savedQuestion = await this.questionRepository.save(newQuestion);
+
+    // If an assessmentId was provided, create a mapping in the assessment_questions table
+    if (createQuestionInput.assessmentId) {
+      const newMapping = this.assessmentQuestionRepo.create({
+        assessment_id: createQuestionInput.assessmentId,
+        question_id: savedQuestion.id,
+      });
+
+      await this.assessmentQuestionRepo.save(newMapping);
+    }
+
+    return savedQuestion;
   }
 }

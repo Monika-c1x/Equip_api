@@ -1,19 +1,39 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, ILike } from 'typeorm';
 import { CreateAssessmentInput } from './dto/create-assessment.input';
 import { UpdateAssessmentInput } from './dto/update-assessment.input';
 import { Assessment } from './entities/assessment.entity';
-
+import { AssessmentQuestion } from './entities/assessment-question.entity';
+import { StudentAssessmentResponse } from './dto/student-assessment.response';
+import { GetAssessmentsArgs } from './dto/get-assessments.args';
+import { PaginatedAssessmentsResponse } from './dto/paginated-assessments.response';
 @Injectable()
 export class AssessmentService {
-  async findAll(): Promise<Assessment[]> {
-    return await this.assessmentRepository.find();
-  }
   constructor(
     @InjectRepository(Assessment)
     private assessmentRepository: Repository<Assessment>,
+
+    @InjectRepository(AssessmentQuestion)
+    private assessmentQuestionRepo: Repository<AssessmentQuestion>,
   ) {}
+
+  async findAll(
+    args: GetAssessmentsArgs,
+  ): Promise<PaginatedAssessmentsResponse> {
+    const { limit = 10, offset = 0, search } = args;
+
+    const whereCondition = search ? { title: ILike(`%${search}%`) } : {};
+
+    const [items, totalCount] = await this.assessmentRepository.findAndCount({
+      where: whereCondition,
+      take: limit,
+      skip: offset,
+      order: { createdAt: 'DESC' },
+    });
+
+    return { items, totalCount };
+  }
 
   async create(
     createAssessmentInput: CreateAssessmentInput,
@@ -65,5 +85,41 @@ export class AssessmentService {
     const assessment = await this.findOne(id);
     await this.assessmentRepository.remove(assessment);
     return 'Assessment deleted successfully';
+  }
+
+  async getStudentAssessmentDetails(
+    assessmentId: string,
+  ): Promise<StudentAssessmentResponse> {
+    const assessment = await this.assessmentRepository.findOne({
+      where: { id: assessmentId },
+    });
+
+    if (!assessment) {
+      throw new NotFoundException(`Assessment not found`);
+    }
+
+    const mappings = await this.assessmentQuestionRepo.find({
+      where: { assessment_id: assessmentId },
+      relations: ['question'],
+    });
+
+    const safeQuestions = mappings.map((mapping) => {
+      const q = mapping.question;
+      return {
+        id: q.id,
+        question: q.question,
+        options: q.options,
+        positiveScore: q.positiveScore,
+        negativeScore: q.negativeScore,
+      };
+    });
+
+    return {
+      id: assessment.id,
+      title: assessment.title,
+      role: assessment.role,
+      duration: assessment.duration,
+      questions: safeQuestions,
+    };
   }
 }

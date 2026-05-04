@@ -1,0 +1,23 @@
+mutation CreateAndLinkQuestion {
+  createQuestion(createQuestionInput: {
+    assessmentId: "6dea5f31-2a29-4ccd-beb5-30648a08166a" 
+    role: "Backend Developer"
+    question: "Which of the following is a core module in Node.js used for file operations?"
+    options: { 
+      A: "http", 
+      B: "fs", 
+      C: "path", 
+      D: "crypto" 
+    }
+    correctAnswer: ["B"]
+    positiveScore: 2
+    negativeScore: 1
+    status: true
+  }) {
+    id
+    role
+    question
+    positiveScore
+  }
+}
+
