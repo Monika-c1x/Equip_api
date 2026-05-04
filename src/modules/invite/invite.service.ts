@@ -31,12 +31,15 @@ export class InviteService {
   async createInvite(
     email: string,
     recruiterId: string,
-    expiryMinutes: number = 24 * 60, // 24 hours by default
+    expiryMinutes: number = 24 * 60,
+    startDate: number,
+    startTime: number,
     metadata?: any,
   ): Promise<Invite> {
     try {
       const inviteToken = this.generateInviteToken();
       const expiresAt = new Date(Date.now() + expiryMinutes * 60 * 1000);
+      const validFrom = new Date(`${startDate}T${startTime}:00`);
 
       const invite = this.inviteRepository.create({
         inviteToken,

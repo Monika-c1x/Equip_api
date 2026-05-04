@@ -106,12 +106,11 @@ export class AuthService {
     }
   }
 
-  async sendInvite(email: string, inviteToken: string, expiresAt:Date): Promise<SendInviteResponse>{
+  async sendInvite(email: string, inviteToken: string, expiresAt:Date, emailTemplate: string, emailSubject: string): Promise<SendInviteResponse>{
     const inviteLink = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/invite/${inviteToken}`;
-    const emailTemplate= this.emailService.generateAssessmentInviteEmail(email,inviteLink)
     await this.emailService.sendEmail({
       to: email,
-      subject: 'Your Equip Exam Platform Invite Link',
+      subject: emailSubject,
       html: emailTemplate,
     })
     return {
