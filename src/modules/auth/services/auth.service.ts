@@ -20,12 +20,11 @@ export interface SendOtpResponse {
   expiresIn: number;
 }
 
-export interface SendInviteResponse{
-  inviteToken : string;
-  inviteLink : string;
-  expiresAt :Date;
+export interface SendInviteResponse {
+  inviteToken: string;
+  inviteLink: string;
+  expiresAt: Date;
   message: string;
-
 }
 
 export interface VerifyOtpResponse {
@@ -64,14 +63,14 @@ export class AuthService {
         throw new BadRequestException('Email does not match the invite');
       }
 
-      // Check if candidate already exists
-      const existingCandidate = await this.candidateRepository.findOne({
-        where: { email },
-      });
+      // // Check if candidate already exists
+      // const existingCandidate = await this.candidateRepository.findOne({
+      //   where: { email },
+      // });
 
-      if (existingCandidate && existingCandidate.inviteTokenUsed) {
-        throw new BadRequestException('Email already registered');
-      }
+      // if (existingCandidate && existingCandidate.inviteTokenUsed) {
+      //   throw new BadRequestException('Email already registered');
+      // }
 
       // Generate OTP
       const otp = this.otpService.generateOtp();
@@ -106,19 +105,46 @@ export class AuthService {
     }
   }
 
-  async sendInvite(email: string, inviteToken: string, expiresAt:Date, emailTemplate: string, emailSubject: string): Promise<SendInviteResponse>{
+  async sendInvite(
+    email: string,
+    inviteToken: string,
+    expiresAt: Date,
+    emailTemplate: string,
+    emailSubject: string,
+    validFrom?: Date,
+  ): Promise<SendInviteResponse> {
     const inviteLink = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/invite/${inviteToken}`;
+
+    // Start with original template and replace all placeholders
+    let emailContent = emailTemplate;
+
+
+    // Replace validFrom if provided
+    if (validFrom) {
+      const validFromText = validFrom.toLocaleString();
+      emailContent = emailContent.replace(
+        /{{\s*validFrom\s*}}/gi,
+        validFromText,
+      );
+    }
+        emailContent = emailContent.replace(/{{\s*link\s*}}/gi, inviteLink);
+
+    // Replace expiresAt
+    const expiresAtText = expiresAt.toLocaleString();
+    emailContent = emailContent.replace(/{{\s*expiresAt\s*}}/gi, expiresAtText);
+
     await this.emailService.sendEmail({
       to: email,
       subject: emailSubject,
-      html: emailTemplate,
-    })
+      html: emailContent,
+    });
+
     return {
       inviteToken,
       inviteLink,
       expiresAt,
-      message: 'Invite Link sent successfully to your email'
-    }
+      message: 'Invite Link sent successfully to your email',
+    };
   }
 
   /**

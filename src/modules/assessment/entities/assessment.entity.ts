@@ -33,13 +33,13 @@ export class Assessment {
   @Field(() => Int)
   duration!: number;
 
-  @Column({ name: 'start_time', type: 'timestamp', nullable: true })
-  @Field(() => Date, { nullable: true })
-  startTime?: Date;
+  // @Column({ name: 'start_time', type: 'timestamp', nullable: true })
+  // @Field(() => Date, { nullable: true })
+  // startTime?: Date;
 
-  @Column({ name: 'end_time', type: 'timestamp', nullable: true })
-  @Field(() => Date, { nullable: true })
-  endTime?: Date;
+  // @Column({ name: 'end_time', type: 'timestamp', nullable: true })
+  // @Field(() => Date, { nullable: true })
+  // endTime?: Date;
 
   @Column({ name: 'is_active', type: 'tinyint', default: 1 })
   @Field()

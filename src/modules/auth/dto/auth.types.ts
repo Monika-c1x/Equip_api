@@ -92,15 +92,15 @@ export class GenerateInviteInput {
   @Field({ nullable: true })
   expiryMinutes!: number;
 
-  @Field({nullable: false})
-  startDate!: number;
+  @Field({ nullable: true })
+  startDate!: string; // Format: YYYY-MM-DD (e.g., 2026-05-05)
 
-  @Field({nullable: false})
-  startTime!: number;
+  @Field({ nullable: true })
+  startTime!: string; // Format: HH:mm (e.g., 14:30)
 
-  @Field({nullable: false})
+  @Field({ nullable: false })
   emailTemplate!: string;
 
-  @Field({nullable: false})
+  @Field({ nullable: false })
   emailSubject!: string;
 }

@@ -7,12 +7,17 @@ import { AppResolver } from './app.resolver';
 import { CommonModule } from './common/common.module';
 import { UsersModule } from './modules/users/users.module';
 import { Candidate, Invite } from './common/entities';
+import { AuthResolver } from './modules/auth/auth.resolver';
+import { AssessmentResolver } from './modules/assessment/assessment.resolver';
+import { AuthModule } from './modules/auth/auth.module';
+import { InviteModule } from './modules/invite/invite.module';
+import { AssessmentModule } from './modules/assessment/assessment.module';
 
 @Module({
   imports: [
     CommonModule,
     ConfigModule.forRoot(), 
-
+    AuthModule,InviteModule,AssessmentModule,
     TypeOrmModule.forRoot({
       type: 'mysql',
       host: process.env.DB_HOST || 'localhost',
@@ -37,6 +42,6 @@ import { Candidate, Invite } from './common/entities';
 
     UsersModule,
   ],
-  providers: [AppResolver],
+  providers: [AppResolver,AuthResolver,AssessmentResolver],
 })
 export class AppModule {}

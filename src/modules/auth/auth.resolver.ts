@@ -45,13 +45,18 @@ export class AuthResolver {
       const invite = await this.inviteService.createInvite(
         input.email,
         'recruiter1',
+        input.expiryMinutes || 24 * 60,
         input.startDate,
         input.startTime,
-        // user.candidateId,
-        input.expiryMinutes || 24 * 60,
       );
-      return await this.authService.sendInvite(input.email,invite.inviteToken,invite.expiresAt,input.emailTemplate, input.emailSubject)
-
+      return await this.authService.sendInvite(
+        input.email,
+        invite.inviteToken,
+        invite.expiresAt,
+        input.emailTemplate,
+        input.emailSubject,
+        invite.validFrom,
+      );
 
       // return {
       //   inviteToken: invite.inviteToken,

@@ -7,6 +7,8 @@ import { UseGuards } from '@nestjs/common';
 import { StudentAssessmentResponse } from './dto/student-assessment.response';
 import { GetAssessmentsArgs } from './dto/get-assessments.args';
 import { PaginatedAssessmentsResponse } from './dto/paginated-assessments.response';
+import { SubmitAssessmentInput } from './dto/submit-assessment.input';
+import { SubmissionResultResponse } from './dto/submission-result.response';
 
 @Resolver(() => Assessment)
 export class AssessmentResolver {
@@ -30,7 +32,7 @@ export class AssessmentResolver {
   //     return this.assessmentService.create(createAssessmentInput, userId);
   //   }
 
- @Query(() => PaginatedAssessmentsResponse, { name: 'getAssessments' }) 
+  @Query(() => PaginatedAssessmentsResponse, { name: 'getAssessments' })
   findAll(@Args() args: GetAssessmentsArgs) {
     return this.assessmentService.findAll(args);
   }
@@ -44,7 +46,10 @@ export class AssessmentResolver {
   updateAssessment(
     @Args('updateAssessmentInput') updateAssessmentInput: UpdateAssessmentInput,
   ) {
-    return this.assessmentService.update(updateAssessmentInput.id, updateAssessmentInput);
+    return this.assessmentService.update(
+      updateAssessmentInput.id,
+      updateAssessmentInput,
+    );
   }
 
   @Mutation(() => String)
@@ -57,5 +62,19 @@ export class AssessmentResolver {
     @Args('assessmentId', { type: () => ID }) assessmentId: string,
   ) {
     return this.assessmentService.getStudentAssessmentDetails(assessmentId);
+  }
+
+  @Mutation(() => SubmissionResultResponse, { name: 'submitAssessment' })
+  async submitAssessment(
+    @Args('input') input: SubmitAssessmentInput,
+  ): Promise<SubmissionResultResponse> {
+    return this.assessmentService.submitAssessment(input);
+  }
+
+  @Query(() => SubmissionResultResponse, { name: 'getSubmissionResults' })
+  async getSubmissionResults(
+    @Args('submissionId', { type: () => ID }) submissionId: string,
+  ): Promise<SubmissionResultResponse> {
+    return this.assessmentService.getSubmissionResults(submissionId);
   }
 }

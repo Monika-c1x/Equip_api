@@ -26,7 +26,7 @@ export class Invite {
     length: 255,
     unique: true,
     nullable: false,
-    name: 'invite_token'
+    name: 'invite_token',
   })
   inviteToken!: string;
 
@@ -49,6 +49,13 @@ export class Invite {
     nullable: false,
   })
   expiresAt!: Date;
+
+  @Column({
+    type: 'timestamp',
+    nullable: true,
+    name: 'valid_from',
+  })
+  validFrom!: Date;
 
   @Column({
     type: 'varchar',

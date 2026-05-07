@@ -32,20 +32,27 @@ export class InviteService {
     email: string,
     recruiterId: string,
     expiryMinutes: number = 24 * 60,
-    startDate: number,
-    startTime: number,
+    startDate?: string,
+    startTime?: string,
     metadata?: any,
   ): Promise<Invite> {
     try {
       const inviteToken = this.generateInviteToken();
       const expiresAt = new Date(Date.now() + expiryMinutes * 60 * 1000);
-      const validFrom = new Date(`${startDate}T${startTime}:00`);
+
+      // Parse start date and time (format: YYYY-MM-DD and HH:mm)
+      let validFrom: Date | undefined;
+      if (startDate && startTime) {
+        validFrom = new Date(`${startDate}T${startTime}:00`);
+        this.logger.log(`Invite valid from ${validFrom.toISOString()}`);
+      }
 
       const invite = this.inviteRepository.create({
         inviteToken,
         email,
         status: InviteStatus.PENDING,
         expiresAt,
+        validFrom,
         recruiterId,
       });
 
@@ -72,8 +79,17 @@ export class InviteService {
         throw new NotFoundException('Invite token not found');
       }
 
+      const now = new Date();
+
+      // Check if the invite is not yet valid (before validFrom)
+      if (invite.validFrom && now < invite.validFrom) {
+        throw new BadRequestException(
+          `Invite link is not yet valid. It becomes valid from ${invite.validFrom.toISOString()}`,
+        );
+      }
+
       // Check if expire
-      if (new Date() > invite.expiresAt) {
+      if (now > invite.expiresAt) {
         // Mark as expired
         await this.inviteRepository.update(invite.id, {
           status: InviteStatus.EXPIRED,
