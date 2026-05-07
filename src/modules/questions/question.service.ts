@@ -1,9 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Question } from './entities/question.entity';
 import { CreateQuestionInput } from './dto/create-question.input';
 import { AssessmentQuestion } from '../assessment/entities/assessment-question.entity';
+import { UpdateQuestionInput } from './dto/update-question.input';
 
 @Injectable()
 export class QuestionService {
@@ -52,5 +53,34 @@ export class QuestionService {
     });
 
     return mappings.map((mapping) => mapping.question);
+  }
+
+  async update(id: string, updateQuestionInput: UpdateQuestionInput): Promise<Question> {
+    const { id: _, ...updateData } = updateQuestionInput;
+    const question = await this.questionRepository.preload({
+      id: id,
+      ...updateData,
+    });
+
+    if (!question) {
+      throw new NotFoundException(`Question with ID ${id} not found`);
+    }
+
+    return await this.questionRepository.save(question);
+  }
+
+  async remove(id: string): Promise<string> {
+    const question = await this.questionRepository.findOne({
+      where: { id },
+    });
+
+    if (!question) {
+      throw new NotFoundException(`Question with ID ${id} not found`);
+    }
+
+    await this.assessmentQuestionRepo.delete({ question_id: id });
+    await this.questionRepository.remove(question);
+
+    return 'Question and its assessment links deleted successfully';
   }
 }
